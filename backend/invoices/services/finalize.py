@@ -11,7 +11,13 @@ from company.models import CompanySettings
 
 from .. import audit
 from ..exceptions import InvalidInvoiceError
-from ..models import STATUS_CANCELLED, STATUS_ISSUED, DOCUMENT_TYPE_STORNO, Invoice, InvoiceItem
+from ..models import (
+    DOCUMENT_TYPE_STORNO,
+    STATUS_CANCELLED,
+    STATUS_ISSUED,
+    Invoice,
+    InvoiceItem,
+)
 from ..numbering import get_next_invoice_number, get_next_storno_number
 from .pdf import render_invoice_pdf
 from .pdfa3 import embed_zugferd_xml
@@ -55,6 +61,8 @@ def finalize_invoice(invoice: Invoice, actor: str = "system", source_ip: str | N
 def cancel_invoice(invoice: Invoice, actor: str = "system", source_ip: str | None = None) -> Invoice:
     if invoice.document_type == DOCUMENT_TYPE_STORNO:
         raise InvalidInvoiceError(["Eine Stornorechnung kann nicht erneut storniert werden."])
+    if invoice.status == STATUS_CANCELLED:
+        raise InvalidInvoiceError(["Diese Rechnung wurde bereits storniert."])
     if not invoice.is_locked:
         raise InvalidInvoiceError(["Nur finalisierte Rechnungen können storniert werden."])
 

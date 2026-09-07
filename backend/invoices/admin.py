@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AuditLogEntry, Invoice, InvoiceItem
+from .models import AuditLogEntry, Invoice, InvoiceItem, PaymentReminder
 
 
 class InvoiceItemInline(admin.TabularInline):
@@ -26,3 +26,9 @@ class AuditLogEntryAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(PaymentReminder)
+class PaymentReminderAdmin(admin.ModelAdmin):
+    list_display = ("invoice", "level", "created_at")
+    list_filter = ("level",)

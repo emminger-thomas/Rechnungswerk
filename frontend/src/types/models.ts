@@ -74,6 +74,7 @@ export interface Invoice {
   issue_date: string | null
   delivery_date: string
   due_date: string | null
+  paid_date: string | null
   notes: string
   total_net: string
   total_tax: string
@@ -82,6 +83,7 @@ export interface Invoice {
   created_at: string
   updated_at: string
   items: InvoiceItem[]
+  reminder_count: number
 }
 
 export type InvoiceDraftInput = Pick<Invoice, "customer" | "delivery_date" | "due_date" | "notes"> & {

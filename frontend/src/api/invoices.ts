@@ -62,12 +62,45 @@ export function useCancelInvoice() {
   })
 }
 
+interface ActionError {
+  errors: string[]
+}
+
+export function useMarkInvoicePaid() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, paidDate }: { id: string; paidDate: string }) =>
+      api.post<Invoice | ActionError>(`/invoices/${id}/mark-paid/`, { paid_date: paidDate }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["invoices"] }),
+  })
+}
+
+export function useCreateReminder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.post<Invoice | ActionError>(`/invoices/${id}/remind/`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["invoices"] }),
+  })
+}
+
 export async function downloadInvoicePdf(id: string, invoiceNumber: string) {
   const blob = await api.blob(`/invoices/${id}/pdf/`)
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
   link.href = url
   link.download = `${invoiceNumber}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+export async function downloadDatevExport(year: number, month: number) {
+  const blob = await api.blob(`/export/datev?year=${year}&month=${String(month).padStart(2, "0")}`)
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `DATEV_Export_${year}-${String(month).padStart(2, "0")}.zip`
   document.body.appendChild(link)
   link.click()
   link.remove()

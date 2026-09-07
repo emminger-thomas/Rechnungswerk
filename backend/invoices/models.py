@@ -71,6 +71,7 @@ class Invoice(models.Model):
     issue_date = models.DateField(null=True, blank=True)
     delivery_date = models.DateField(default=timezone.localdate)
     due_date = models.DateField(null=True, blank=True)
+    paid_date = models.DateField(null=True, blank=True)
 
     notes = models.TextField(blank=True)
 
@@ -160,6 +161,27 @@ class InvoiceItem(models.Model):
         return f"{self.description[:40]} ({self.quantity} {self.unit_label})"
 
 
+class PaymentReminder(models.Model):
+    """A dunning/reminder record (SPEC.md 4.5: 'Zahlungserinnerung / Mahnung').
+
+    Append-only alongside the audit log; only created via
+    invoices.services.dashboard.create_reminder().
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    invoice = models.ForeignKey(Invoice, related_name="reminders", on_delete=models.CASCADE)
+    level = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "Zahlungserinnerung"
+        verbose_name_plural = "Zahlungserinnerungen"
+
+    def __str__(self):
+        return f"Mahnstufe {self.level} für {self.invoice_id}"
+
+
 class AuditLogEntry(models.Model):
     """Append-only revision log (SPEC.md 8.1). No update/delete route is
     ever exposed for this model; entries are only created via
@@ -170,14 +192,18 @@ class AuditLogEntry(models.Model):
     ACTION_FINALIZED = "FINALIZED"
     ACTION_EXPORTED_PDF = "EXPORTED_PDF"
     ACTION_MARKED_PAID = "MARKED_PAID"
+    ACTION_REMINDER_SENT = "REMINDER_SENT"
     ACTION_CANCELLED = "CANCELLED"
+    ACTION_MARKED_OVERDUE = "MARKED_OVERDUE"
 
     ACTION_CHOICES = [
         (ACTION_CREATED, "Erstellt"),
         (ACTION_FINALIZED, "Finalisiert"),
         (ACTION_EXPORTED_PDF, "PDF exportiert"),
         (ACTION_MARKED_PAID, "Als bezahlt markiert"),
+        (ACTION_REMINDER_SENT, "Zahlungserinnerung erstellt"),
         (ACTION_CANCELLED, "Storniert"),
+        (ACTION_MARKED_OVERDUE, "Als überfällig markiert"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

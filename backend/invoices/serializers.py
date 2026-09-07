@@ -31,6 +31,7 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     items = InvoiceItemSerializer(many=True)
     customer_detail = CustomerLookupSerializer(source="customer", read_only=True)
+    reminder_count = serializers.IntegerField(source="reminders.count", read_only=True)
 
     class Meta:
         model = Invoice
@@ -46,6 +47,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "issue_date",
             "delivery_date",
             "due_date",
+            "paid_date",
             "notes",
             "total_net",
             "total_tax",
@@ -54,6 +56,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "items",
+            "reminder_count",
         ]
         read_only_fields = [
             "id",
@@ -63,6 +66,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "status",
             "is_locked",
             "issue_date",
+            "paid_date",
             "total_net",
             "total_tax",
             "total_gross",

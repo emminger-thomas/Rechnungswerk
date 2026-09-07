@@ -43,3 +43,12 @@ class StornoTests(TestCase):
         invoice = make_invoice_with_item()
         with self.assertRaises(InvalidInvoiceError):
             cancel_invoice(invoice)
+
+    def test_cannot_cancel_an_already_cancelled_invoice(self):
+        invoice = make_invoice_with_item()
+        finalize_invoice(invoice)
+        cancel_invoice(invoice)
+        invoice.refresh_from_db()
+
+        with self.assertRaises(InvalidInvoiceError):
+            cancel_invoice(invoice)

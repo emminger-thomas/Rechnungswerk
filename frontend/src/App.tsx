@@ -1,6 +1,7 @@
 import { Link, Route, Routes } from "react-router-dom"
 
 import { CustomerImportPage } from "./pages/CustomerImportPage"
+import { DashboardPage } from "./pages/DashboardPage"
 import { InvoiceEditorPage } from "./pages/InvoiceEditorPage"
 import { InvoiceListPage } from "./pages/InvoiceListPage"
 
@@ -11,6 +12,9 @@ function App() {
         <div className="mx-auto flex max-w-4xl items-center gap-4">
           <Link to="/" className="font-semibold">
             Rechnungswerk
+          </Link>
+          <Link to="/" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
+            Dashboard
           </Link>
           <Link to="/rechnungen" className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
             Rechnungen
@@ -25,7 +29,7 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<InvoiceListPage />} />
+        <Route path="/" element={<DashboardPage />} />
         <Route path="/rechnungen" element={<InvoiceListPage />} />
         <Route path="/rechnungen/neu" element={<InvoiceEditorPage />} />
         <Route path="/rechnungen/:id" element={<InvoiceEditorPage />} />

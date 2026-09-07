@@ -6,7 +6,7 @@ from rest_framework.routers import DefaultRouter
 
 from company.views import CompanySettingsView
 from customers.views import CustomerViewSet
-from invoices.views import InvoiceViewSet
+from invoices.views import InvoiceViewSet, datev_export
 
 router = DefaultRouter()
 router.register("customers", CustomerViewSet, basename="customer")
@@ -15,6 +15,7 @@ router.register("invoices", InvoiceViewSet, basename="invoice")
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/company-settings", CompanySettingsView.as_view(), name="company-settings"),
+    path("api/export/datev", datev_export, name="datev-export"),
     path("api/", include(router.urls)),
 ]
 
