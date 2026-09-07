@@ -215,6 +215,7 @@ class AuditLogEntry(models.Model):
     actor = models.CharField(max_length=255, default="system")
     source_ip = models.GenericIPAddressField(null=True, blank=True)
     payload_hash = models.CharField(max_length=64)
+    signature = models.CharField(max_length=64, blank=True)
     details = models.JSONField(default=dict, blank=True)
 
     class Meta:

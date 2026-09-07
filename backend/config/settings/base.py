@@ -14,6 +14,12 @@ SECRET_KEY = os.environ.get(
     "django-insecure-llpyonv&sy-itru0pq$!qgpyx#yf^crvp%=8g%94v)rk5icw8p",
 )
 
+# HMAC key for AuditLogEntry.signature (SPEC.md §08). Falls back to
+# SECRET_KEY so dev/prod both get a real signature without a second
+# mandatory env var; set a dedicated secret in prod for proper key
+# separation between session/CSRF signing and audit-log integrity.
+AUDIT_LOG_SECRET_KEY = os.environ.get("AUDIT_LOG_SECRET_KEY", SECRET_KEY)
+
 DEBUG = False
 
 ALLOWED_HOSTS: list[str] = []

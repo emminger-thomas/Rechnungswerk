@@ -7,6 +7,7 @@ import {
   useFinalizeInvoice,
   useUpdateInvoice,
   downloadInvoicePdf,
+  previewInvoicePdf,
 } from "../../api/invoices"
 import type { CustomerLookup, Invoice, InvoiceItem } from "../../types/models"
 import { CustomerSearch } from "../customer/CustomerSearch"
@@ -81,7 +82,7 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
         return
       }
       setPdfReady(result)
-      await downloadInvoicePdf(result.id, result.invoice_number ?? "rechnung")
+      await previewInvoicePdf(result.id)
       navigate(`/rechnungen/${result.id}`, { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.body && typeof err.body === "object" && "errors" in err.body) {
@@ -145,8 +146,15 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
       )}
 
       {pdfReady && (
-        <div className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-          Rechnung {pdfReady.invoice_number} finalisiert und heruntergeladen.
+        <div className="flex items-center justify-between rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+          <span>Rechnung {pdfReady.invoice_number} finalisiert — PDF-Vorschau geöffnet.</span>
+          <button
+            type="button"
+            className="font-medium underline hover:no-underline"
+            onClick={() => downloadInvoicePdf(pdfReady.id, pdfReady.invoice_number ?? "rechnung")}
+          >
+            PDF herunterladen
+          </button>
         </div>
       )}
 

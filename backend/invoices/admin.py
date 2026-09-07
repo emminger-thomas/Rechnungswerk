@@ -1,5 +1,6 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 
+from . import audit
 from .models import AuditLogEntry, Invoice, InvoiceItem, PaymentReminder
 
 
@@ -20,12 +21,29 @@ class InvoiceAdmin(admin.ModelAdmin):
 class AuditLogEntryAdmin(admin.ModelAdmin):
     list_display = ("invoice", "action", "actor", "timestamp")
     list_filter = ("action",)
+    actions = ["verify_signature"]
 
     def has_change_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    @admin.action(description="Integrität prüfen (HMAC-Signatur)")
+    def verify_signature(self, request, queryset):
+        invalid = [entry for entry in queryset if not audit.verify_entry(entry)]
+        if invalid:
+            ids = ", ".join(str(entry.id) for entry in invalid)
+            self.message_user(
+                request,
+                f"{len(invalid)} Eintrag/Einträge mit ungültiger Signatur: {ids}",
+                level=messages.ERROR,
+            )
+        else:
+            self.message_user(
+                request, f"{queryset.count()} Einträge geprüft — alle Signaturen gültig.",
+                level=messages.SUCCESS,
+            )
 
 
 @admin.register(PaymentReminder)

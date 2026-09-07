@@ -11,11 +11,22 @@ export function useInvoice(id: string | undefined) {
   })
 }
 
-export function useInvoices(status?: string) {
+interface InvoiceFilters {
+  status?: string
+  month?: string // "YYYY-MM"
+  q?: string
+}
+
+export function useInvoices(filters: InvoiceFilters = {}) {
+  const params = new URLSearchParams()
+  if (filters.status) params.set("status", filters.status)
+  if (filters.month) params.set("month", filters.month)
+  if (filters.q) params.set("q", filters.q)
+  const query = params.toString()
+
   return useQuery({
-    queryKey: ["invoices", "list", status],
-    queryFn: () =>
-      api.get<{ results: Invoice[] }>(`/invoices/${status ? `?status=${status}` : ""}`),
+    queryKey: ["invoices", "list", filters.status, filters.month, filters.q],
+    queryFn: () => api.get<{ results: Invoice[] }>(`/invoices/${query ? `?${query}` : ""}`),
   })
 }
 
@@ -93,6 +104,15 @@ export async function downloadInvoicePdf(id: string, invoiceNumber: string) {
   link.click()
   link.remove()
   window.URL.revokeObjectURL(url)
+}
+
+// Opens the ZUGFeRD PDF in a new tab using the browser's native PDF
+// viewer, rather than forcing a download (SPEC.md §09: Ctrl/Cmd+Enter
+// finalizes "& PDF-Vorschau öffnen").
+export async function previewInvoicePdf(id: string) {
+  const blob = await api.blob(`/invoices/${id}/pdf/`)
+  const url = window.URL.createObjectURL(blob)
+  window.open(url, "_blank", "noopener")
 }
 
 export async function downloadDatevExport(year: number, month: number) {

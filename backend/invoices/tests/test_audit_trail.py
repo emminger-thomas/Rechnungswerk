@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from invoices.audit import hash_payload, log_event
+from invoices.audit import hash_payload, log_event, verify_entry
 from invoices.exceptions import GoBDLockError
 from invoices.models import AuditLogEntry
 from invoices.services.finalize import cancel_invoice, finalize_invoice
@@ -62,6 +62,15 @@ class AuditTrailTests(TestCase):
 
         different_hash = hash_payload({"invoice_number": "different"})
         self.assertNotEqual(entry.payload_hash, different_hash)
+
+    def test_signature_verifies_and_detects_tampering(self):
+        invoice = make_invoice_with_item()
+        entry = log_event(invoice, AuditLogEntry.ACTION_CREATED)
+
+        self.assertTrue(verify_entry(entry))
+
+        entry.payload_hash = "tampered" + entry.payload_hash[8:]
+        self.assertFalse(verify_entry(entry))
 
     def test_audit_log_entries_are_append_only(self):
         invoice = make_invoice_with_item()

@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.db.models import Q
 from django.http import FileResponse, HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
@@ -23,9 +24,31 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         sync_overdue_statuses()
         queryset = super().get_queryset()
+
         status_filter = self.request.query_params.get("status")
         if status_filter:
             queryset = queryset.filter(status=status_filter)
+
+        month_filter = self.request.query_params.get("month")
+        if month_filter:
+            try:
+                year, month = (int(part) for part in month_filter.split("-", 1))
+            except ValueError:
+                pass
+            else:
+                # DRAFT invoices have no issue_date yet, so browsing by month
+                # falls back to delivery_date for those.
+                queryset = queryset.filter(
+                    Q(issue_date__year=year, issue_date__month=month)
+                    | Q(issue_date__isnull=True, delivery_date__year=year, delivery_date__month=month)
+                )
+
+        query = self.request.query_params.get("q")
+        if query:
+            queryset = queryset.filter(
+                Q(invoice_number__icontains=query) | Q(customer__name__icontains=query)
+            )
+
         return queryset
 
     def perform_create(self, serializer):
