@@ -1,0 +1,217 @@
+{% load l10n %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+    @page {
+        size: A4;
+        margin: 2.5cm 2cm 2cm 2cm;
+    }
+    body {
+        font-family: "DejaVu Sans", Arial, sans-serif;
+        font-size: 10.5pt;
+        color: #1a1a1a;
+    }
+    .draft-watermark {
+        position: fixed;
+        top: 40%;
+        left: 10%;
+        width: 80%;
+        text-align: center;
+        font-size: 90pt;
+        font-weight: bold;
+        color: rgba(200, 0, 0, 0.15);
+        transform: rotate(-30deg);
+        z-index: -1;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2.5em;
+    }
+    .company-block {
+        font-size: 9pt;
+        color: #555;
+        margin-bottom: 2em;
+    }
+    .customer-address {
+        margin-bottom: 2em;
+    }
+    h1 {
+        font-size: 16pt;
+        margin-bottom: 0.2em;
+    }
+    .meta-table {
+        width: 100%;
+        margin-bottom: 1.5em;
+        border-collapse: collapse;
+    }
+    .meta-table td {
+        padding: 2px 0;
+    }
+    .meta-table td.label {
+        color: #555;
+        width: 40%;
+    }
+    table.items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5em;
+    }
+    table.items th {
+        text-align: left;
+        border-bottom: 1.5px solid #333;
+        padding: 6px 4px;
+        font-size: 9pt;
+        text-transform: uppercase;
+        color: #555;
+    }
+    table.items td {
+        border-bottom: 0.5px solid #ddd;
+        padding: 6px 4px;
+        vertical-align: top;
+    }
+    table.items td.num, table.items th.num {
+        text-align: right;
+    }
+    .totals {
+        width: 45%;
+        margin-left: 55%;
+        border-collapse: collapse;
+    }
+    .totals td {
+        padding: 3px 4px;
+    }
+    .totals td.num {
+        text-align: right;
+    }
+    .totals tr.grand-total td {
+        border-top: 1.5px solid #333;
+        font-weight: bold;
+        font-size: 12pt;
+    }
+    .legal-notices {
+        margin-top: 2em;
+        font-size: 9pt;
+        color: #333;
+    }
+    .footer {
+        margin-top: 3em;
+        font-size: 8.5pt;
+        color: #777;
+        border-top: 0.5px solid #ccc;
+        padding-top: 0.5em;
+    }
+</style>
+</head>
+<body>
+    {% if is_draft %}
+    <div class="draft-watermark">ENTWURF</div>
+    {% endif %}
+
+    <div class="company-block">
+        {{ company.company_name }} &middot; {{ company.street }} &middot; {{ company.zip_code }} {{ company.city }}
+    </div>
+
+    <div class="customer-address">
+        <strong>{{ customer.name }}</strong><br>
+        {% if customer.contact_person %}{{ customer.contact_person }}<br>{% endif %}
+        {{ customer.street }}<br>
+        {{ customer.zip_code }} {{ customer.city }}
+    </div>
+
+    <h1>
+        {% if invoice.document_type == "STORNO" %}Stornorechnung{% else %}Rechnung{% endif %}
+        {% if invoice.invoice_number %}{{ invoice.invoice_number }}{% endif %}
+    </h1>
+
+    <table class="meta-table">
+        <tr>
+            <td class="label">Rechnungsdatum</td>
+            <td>{{ invoice.issue_date|default:"—" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Leistungsdatum</td>
+            <td>{{ invoice.delivery_date }}</td>
+        </tr>
+        <tr>
+            <td class="label">Zahlungsziel</td>
+            <td>{{ invoice.due_date|default:"—" }}</td>
+        </tr>
+        {% if customer.vat_id %}
+        <tr>
+            <td class="label">USt-IdNr. Kunde</td>
+            <td>{{ customer.vat_id }}</td>
+        </tr>
+        {% endif %}
+        {% if customer.leitweg_id %}
+        <tr>
+            <td class="label">Leitweg-ID</td>
+            <td>{{ customer.leitweg_id }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Beschreibung</th>
+                <th class="num">Menge</th>
+                <th>Einheit</th>
+                <th class="num">Einzelpreis</th>
+                <th class="num">MwSt.</th>
+                <th class="num">Gesamt</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td class="num">{{ item.quantity }}</td>
+                <td>{{ item.unit_label }}</td>
+                <td class="num">{{ item.unit_price }} €</td>
+                <td class="num">{{ item.tax_rate }}%</td>
+                <td class="num">{{ item.line_total }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totals">
+        <tr>
+            <td>Nettosumme</td>
+            <td class="num">{{ invoice.total_net }} €</td>
+        </tr>
+        <tr>
+            <td>zzgl. USt.</td>
+            <td class="num">{{ invoice.total_tax }} €</td>
+        </tr>
+        <tr class="grand-total">
+            <td>Gesamtbetrag</td>
+            <td class="num">{{ invoice.total_gross }} €</td>
+        </tr>
+    </table>
+
+    {% if legal_notices %}
+    <div class="legal-notices">
+        {% for notice in legal_notices %}
+        <p>{{ notice }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if invoice.notes %}
+    <div class="legal-notices">{{ invoice.notes }}</div>
+    {% endif %}
+
+    <div class="footer">
+        {{ company.company_name }} &middot; {{ company.owner_name }} &middot;
+        {{ company.street }}, {{ company.zip_code }} {{ company.city }}
+        {% if company.tax_number %} &middot; Steuernr. {{ company.tax_number }}{% endif %}
+        {% if company.vat_id %} &middot; USt-IdNr. {{ company.vat_id }}{% endif %}
+        {% if company.iban %}<br>IBAN {{ company.iban }}{% if company.bic %} &middot; BIC {{ company.bic }}{% endif %}
+        {% if company.bank_name %} &middot; {{ company.bank_name }}{% endif %}{% endif %}
+    </div>
+</body>
+</html>
