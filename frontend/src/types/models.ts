@@ -23,6 +23,7 @@ export type DocumentType = "INVOICE" | "STORNO"
 
 export interface Customer {
   id: string
+  customer_number: string
   name: string
   contact_person: string
   street: string
@@ -38,10 +39,11 @@ export interface Customer {
   updated_at: string
 }
 
-export type CustomerInput = Omit<Customer, "id" | "created_at" | "updated_at">
+export type CustomerInput = Omit<Customer, "id" | "customer_number" | "created_at" | "updated_at">
 
 export interface CustomerLookup {
   id: string
+  customer_number: string
   name: string
   city: string
   vat_id: string

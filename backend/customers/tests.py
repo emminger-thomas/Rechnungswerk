@@ -1,9 +1,11 @@
 import io
 
 from django.test import TestCase
+from rest_framework.test import APITestCase
 
 from customers.services.csv_import import auto_map_columns, build_preview, commit_import, validate_row
 from customers.models import Customer
+from customers.numbering import get_next_customer_number
 
 
 class AutoMapColumnsTests(TestCase):
@@ -59,3 +61,44 @@ class CsvImportPreviewTests(TestCase):
         self.assertEqual(created, 1)
         self.assertEqual(Customer.objects.count(), 1)
         self.assertEqual(Customer.objects.first().name, "Mueller GmbH")
+        self.assertTrue(Customer.objects.first().customer_number.startswith("K-"))
+
+
+class CustomerNumberTests(TestCase):
+    def test_numbers_are_sequential_and_gap_free(self):
+        first = get_next_customer_number()
+        second = get_next_customer_number()
+        self.assertEqual(first, "K-0001")
+        self.assertEqual(second, "K-0002")
+
+
+class CustomerSearchApiTests(APITestCase):
+    def test_search_matches_customer_number(self):
+        customer = Customer.objects.create(
+            customer_number=get_next_customer_number(),
+            name="Muster Kunde GmbH",
+            street="Kundenweg 1",
+            zip_code="10115",
+            city="Berlin",
+        )
+
+        response = self.client.get(f"/api/customers/search/?q={customer.customer_number}")
+
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()]
+        self.assertIn(str(customer.id), ids)
+
+    def test_create_via_api_assigns_customer_number(self):
+        response = self.client.post(
+            "/api/customers/",
+            {
+                "name": "Neuer Kunde",
+                "street": "Teststr. 1",
+                "zip_code": "12345",
+                "city": "Berlin",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.json()["customer_number"].startswith("K-"))

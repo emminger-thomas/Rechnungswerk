@@ -15,6 +15,7 @@ from django.core.validators import EmailValidator
 from stdnum.eu import vat as eu_vat
 
 from customers.models import Customer
+from customers.numbering import get_next_customer_number
 
 # Target Customer field -> accepted (normalized, lowercased) header aliases.
 FIELD_ALIASES: dict[str, list[str]] = {
@@ -145,6 +146,7 @@ def commit_import(preview: ImportPreview) -> int:
     valid_rows = [row.data for row in preview.rows if row.is_valid]
     customers = [
         Customer(
+            customer_number=get_next_customer_number(),
             name=row["name"],
             contact_person=row.get("contact_person", ""),
             street=row.get("street", ""),

@@ -18,7 +18,9 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
     return (
       <div className="flex items-center justify-between rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
         <div>
-          <div className="font-medium">{selected.name}</div>
+          <div className="font-medium">
+            {selected.name} <span className="text-neutral-500">· {selected.customer_number}</span>
+          </div>
           <div className="text-sm text-neutral-500">{selected.city}</div>
         </div>
         <button
@@ -41,7 +43,7 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Kunde suchen (Name, PLZ, USt-IdNr.) ..."
+        placeholder="Kunde suchen (Name, Kundennummer, PLZ, USt-IdNr.) ..."
         className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
         autoFocus
       />
@@ -64,7 +66,9 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
               className="block w-full border-b border-neutral-100 px-3 py-2 text-left last:border-0 hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-800"
               onClick={() => onSelect(customer)}
             >
-              <div className="font-medium">{customer.name}</div>
+              <div className="font-medium">
+                {customer.name} <span className="text-neutral-500">· {customer.customer_number}</span>
+              </div>
               <div className="text-sm text-neutral-500">
                 {customer.city}
                 {customer.vat_id ? ` · ${customer.vat_id}` : ""}

@@ -1,5 +1,6 @@
 from company.models import CompanySettings
 from customers.models import Customer
+from customers.numbering import get_next_customer_number
 from invoices.models import Invoice, InvoiceItem
 
 
@@ -19,6 +20,7 @@ def make_company_settings() -> CompanySettings:
 
 def make_customer(**overrides) -> Customer:
     defaults = dict(
+        customer_number=get_next_customer_number(),
         name="Test Kunde GmbH",
         street="Kundenweg 1",
         zip_code="10115",

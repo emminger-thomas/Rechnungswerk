@@ -18,6 +18,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         if query:
             queryset = queryset.filter(
                 Q(name__icontains=query)
+                | Q(customer_number__icontains=query)
                 | Q(zip_code__icontains=query)
                 | Q(city__icontains=query)
                 | Q(vat_id__icontains=query)

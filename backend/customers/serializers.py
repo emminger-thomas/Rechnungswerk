@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Customer
+from .numbering import get_next_customer_number
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -8,6 +9,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = [
             "id",
+            "customer_number",
             "name",
             "contact_person",
             "street",
@@ -22,7 +24,11 @@ class CustomerSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "customer_number", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        validated_data["customer_number"] = get_next_customer_number()
+        return super().create(validated_data)
 
 
 class CustomerLookupSerializer(serializers.ModelSerializer):
@@ -30,4 +36,4 @@ class CustomerLookupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ["id", "name", "city", "vat_id", "leitweg_id"]
+        fields = ["id", "customer_number", "name", "city", "vat_id", "leitweg_id"]
