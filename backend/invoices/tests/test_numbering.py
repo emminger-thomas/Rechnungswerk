@@ -4,6 +4,7 @@ from django.test import TransactionTestCase
 
 from invoices.numbering import get_next_number
 from invoices.services.finalize import finalize_invoice
+from tenants.current import get_current_tenant
 
 from .factories import make_company_settings, make_invoice_with_item
 
@@ -11,6 +12,7 @@ from .factories import make_company_settings, make_invoice_with_item
 class NumberingSequenceTests(TransactionTestCase):
     def setUp(self):
         make_company_settings()
+        self.tenant = get_current_tenant()
 
     def test_sequential_finalize_has_no_gaps(self):
         numbers = []
@@ -29,7 +31,7 @@ class NumberingSequenceTests(TransactionTestCase):
 
         def worker():
             try:
-                number = get_next_number("CONC", year=2099)
+                number = get_next_number(self.tenant, "CONC", year=2099)
                 with lock:
                     results.append(number)
             except Exception as exc:  # pragma: no cover - failure path

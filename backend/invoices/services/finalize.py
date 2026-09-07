@@ -31,7 +31,7 @@ def finalize_invoice(invoice: Invoice, actor: str = "system", source_ip: str | N
         raise InvalidInvoiceError(errors)
 
     with transaction.atomic():
-        invoice.invoice_number = get_next_invoice_number()
+        invoice.invoice_number = get_next_invoice_number(invoice.tenant)
         invoice.issue_date = timezone.localdate()
         settings_row = CompanySettings.get_solo()
         if invoice.due_date is None:
@@ -68,6 +68,7 @@ def cancel_invoice(invoice: Invoice, actor: str = "system", source_ip: str | Non
 
     with transaction.atomic():
         storno = Invoice(
+            tenant=invoice.tenant,
             customer=invoice.customer,
             document_type=DOCUMENT_TYPE_STORNO,
             cancels_invoice=invoice,
@@ -89,7 +90,7 @@ def cancel_invoice(invoice: Invoice, actor: str = "system", source_ip: str | Non
             )
         storno.recalculate_totals(save=True)
 
-        storno.invoice_number = get_next_storno_number()
+        storno.invoice_number = get_next_storno_number(storno.tenant)
         storno.issue_date = timezone.localdate()
         storno.due_date = storno.issue_date
 

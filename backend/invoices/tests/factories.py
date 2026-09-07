@@ -2,9 +2,17 @@ from company.models import CompanySettings
 from customers.models import Customer
 from customers.numbering import get_next_customer_number
 from invoices.models import Invoice, InvoiceItem
+from tenants.current import get_current_tenant
+from tenants.models import Tenant
+
+
+def make_tenant() -> Tenant:
+    return Tenant.objects.create(name="Test GmbH")
 
 
 def make_company_settings() -> CompanySettings:
+    if not Tenant.objects.exists():
+        make_tenant()
     settings_row = CompanySettings.get_solo()
     settings_row.company_name = "Test GmbH"
     settings_row.street = "Teststr. 1"
@@ -19,8 +27,10 @@ def make_company_settings() -> CompanySettings:
 
 
 def make_customer(**overrides) -> Customer:
+    tenant = get_current_tenant()
     defaults = dict(
-        customer_number=get_next_customer_number(),
+        tenant=tenant,
+        customer_number=get_next_customer_number(tenant),
         name="Test Kunde GmbH",
         street="Kundenweg 1",
         zip_code="10115",
@@ -33,7 +43,7 @@ def make_customer(**overrides) -> Customer:
 
 def make_invoice_with_item(customer=None, **item_overrides) -> Invoice:
     customer = customer or make_customer()
-    invoice = Invoice.objects.create(customer=customer)
+    invoice = Invoice.objects.create(tenant=get_current_tenant(), customer=customer)
     item_defaults = dict(
         invoice=invoice,
         position_index=1,

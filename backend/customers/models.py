@@ -2,15 +2,18 @@ import uuid
 
 from django.db import models
 
+from tenants.models import Tenant
+
 
 class CustomerNumberCounter(models.Model):
     """Backs sequential Kundennummer assignment (SPEC.md 4.1).
 
-    A single row, incremented atomically under select_for_update() so
-    concurrent customer creation (single-record or CSV bulk-import) never
-    hands out the same number twice.
+    One row per tenant, incremented atomically under select_for_update()
+    so concurrent customer creation (single-record or CSV bulk-import)
+    never hands out the same number twice.
     """
 
+    tenant = models.OneToOneField(Tenant, on_delete=models.PROTECT, null=True, blank=True)
     last_number = models.PositiveIntegerField(default=0)
 
     def __str__(self):
@@ -19,6 +22,7 @@ class CustomerNumberCounter(models.Model):
 
 class Customer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, null=True, blank=True)
     customer_number = models.CharField(max_length=20, unique=True, blank=True, db_index=True)
     name = models.CharField(max_length=255, db_index=True)
     contact_person = models.CharField(max_length=255, blank=True)

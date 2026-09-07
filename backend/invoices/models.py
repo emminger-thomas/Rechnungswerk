@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
+from tenants.models import Tenant
+
 from .exceptions import GoBDLockError
 from .tax import TAX_SCENARIO_CHOICES, category_code_for_scenario, default_rate_for_scenario
 from .unit_codes import unit_code_for_label
@@ -33,17 +35,18 @@ DOCUMENT_TYPE_CHOICES = [
 class NumberingCounter(models.Model):
     """Backs gap-free sequential invoice numbering (SPEC.md 4.4).
 
-    One row per (series, year), incremented atomically under
+    One row per (tenant, series, year), incremented atomically under
     select_for_update() inside the same transaction that finalizes an
     invoice, so a rolled-back finalize never leaves a gap.
     """
 
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, null=True, blank=True)
     series = models.CharField(max_length=10)
     year = models.PositiveIntegerField()
     last_number = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ("series", "year")
+        unique_together = ("tenant", "series", "year")
 
     def __str__(self):
         return f"{self.series}-{self.year}: {self.last_number}"
@@ -51,6 +54,7 @@ class NumberingCounter(models.Model):
 
 class Invoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, null=True, blank=True)
     customer = models.ForeignKey(
         "customers.Customer", on_delete=models.PROTECT, related_name="invoices"
     )

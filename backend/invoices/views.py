@@ -6,6 +6,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
+from tenants.current import get_current_tenant
+
 from .exceptions import InvalidInvoiceError
 from . import audit
 from .models import Invoice
@@ -23,7 +25,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         sync_overdue_statuses()
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(tenant=get_current_tenant())
 
         status_filter = self.request.query_params.get("status")
         if status_filter:
@@ -52,7 +54,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        invoice = serializer.save()
+        invoice = serializer.save(tenant=get_current_tenant())
         audit.log_event(
             invoice, audit.AuditLogEntry.ACTION_CREATED, source_ip=self.request.META.get("REMOTE_ADDR")
         )

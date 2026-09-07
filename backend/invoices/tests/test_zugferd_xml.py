@@ -19,7 +19,7 @@ class ZugferdXmlTests(TestCase):
         make_company_settings()
 
     def _finalized_xml(self, invoice):
-        invoice.invoice_number = get_next_invoice_number()
+        invoice.invoice_number = get_next_invoice_number(invoice.tenant)
         invoice.issue_date = datetime.date.today()
         invoice.recalculate_totals()
         return build_cii_xml(invoice)

@@ -3,6 +3,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from tenants.current import get_current_tenant
+
 from .models import Customer
 from .serializers import CustomerLookupSerializer, CustomerSerializer
 from .services import csv_import
@@ -13,7 +15,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerSerializer
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(tenant=get_current_tenant())
         query = self.request.query_params.get("q")
         if query:
             queryset = queryset.filter(

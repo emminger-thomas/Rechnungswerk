@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from tenants.current import get_current_tenant
+
 from .models import Customer
 from .numbering import get_next_customer_number
 
@@ -27,7 +29,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "customer_number", "created_at", "updated_at"]
 
     def create(self, validated_data):
-        validated_data["customer_number"] = get_next_customer_number()
+        tenant = get_current_tenant()
+        validated_data["tenant"] = tenant
+        validated_data["customer_number"] = get_next_customer_number(tenant)
         return super().create(validated_data)
 
 

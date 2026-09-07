@@ -14,6 +14,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import EmailValidator
 from stdnum.eu import vat as eu_vat
 
+from tenants.current import get_current_tenant
+
 from customers.models import Customer
 from customers.numbering import get_next_customer_number
 
@@ -143,10 +145,12 @@ def build_preview(
 
 def commit_import(preview: ImportPreview) -> int:
     """Bulk-create Customer rows for every valid row in the preview."""
+    tenant = get_current_tenant()
     valid_rows = [row.data for row in preview.rows if row.is_valid]
     customers = [
         Customer(
-            customer_number=get_next_customer_number(),
+            tenant=tenant,
+            customer_number=get_next_customer_number(tenant),
             name=row["name"],
             contact_person=row.get("contact_person", ""),
             street=row.get("street", ""),
