@@ -106,11 +106,15 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
   }, [invoiceId])
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
-      <h1 className="text-xl font-semibold">
-        {invoice?.invoice_number ? `Rechnung ${invoice.invoice_number}` : "Neue Rechnung"}
+    <div className="mx-auto max-w-4xl space-y-5 p-4 sm:p-6">
+      <h1 className="text-xl font-semibold tracking-tight">
+        {invoice?.invoice_number ? (
+          <span className="font-mono">{invoice.invoice_number}</span>
+        ) : (
+          "Neue Rechnung"
+        )}
         {invoice?.status === "DRAFT" && (
-          <span className="ml-2 text-sm font-normal text-neutral-500">(Entwurf)</span>
+          <span className="ml-2 text-sm font-normal text-ink/45 dark:text-paper/45">(Entwurf)</span>
         )}
       </h1>
 
@@ -120,23 +124,23 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
 
       <LegalNotices items={items} />
 
-      <div className="ml-auto w-64 space-y-1 text-sm">
+      <div className="ml-auto w-64 space-y-1.5 text-sm">
         <div className="flex justify-between">
-          <span className="text-neutral-500">Nettosumme</span>
-          <span className="tabular-nums">{totals.net.toFixed(2)} €</span>
+          <span className="text-ink/50 dark:text-paper/50">Nettosumme</span>
+          <span className="font-mono tabular-nums">{totals.net.toFixed(2)} €</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-neutral-500">zzgl. USt.</span>
-          <span className="tabular-nums">{totals.tax.toFixed(2)} €</span>
+          <span className="text-ink/50 dark:text-paper/50">zzgl. USt.</span>
+          <span className="font-mono tabular-nums">{totals.tax.toFixed(2)} €</span>
         </div>
-        <div className="flex justify-between border-t border-neutral-300 pt-1 text-base font-semibold dark:border-neutral-700">
+        <div className="flex justify-between border-t-2 border-ink/15 pt-1.5 text-base font-semibold dark:border-paper/15">
           <span>Gesamtbetrag</span>
-          <span className="tabular-nums">{totals.gross.toFixed(2)} €</span>
+          <span className="font-mono tabular-nums">{totals.gross.toFixed(2)} €</span>
         </div>
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="rounded-[4px] border border-status-overdue/30 bg-status-overdue/10 px-3 py-2 text-sm text-status-overdue">
           <ul className="list-inside list-disc">
             {errors.map((error) => (
               <li key={error}>{error}</li>
@@ -146,7 +150,7 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
       )}
 
       {pdfReady && (
-        <div className="flex items-center justify-between rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+        <div className="flex items-center justify-between rounded-[4px] border border-status-paid/30 bg-status-paid/10 px-3 py-2 text-sm text-status-paid">
           <span>Rechnung {pdfReady.invoice_number} finalisiert — PDF-Vorschau geöffnet.</span>
           <button
             type="button"
@@ -164,7 +168,7 @@ export function InvoiceForm({ invoice }: { invoice?: Invoice }) {
             type="button"
             disabled={!invoiceId || !customer || finalizeInvoice.isPending}
             onClick={handleFinalize}
-            className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="btn-primary px-4 py-2.5"
           >
             Rechnung finalisieren &amp; ZUGFeRD-PDF erstellen
           </button>

@@ -96,28 +96,28 @@ export function LineItemGrid({ items, onChange, disabled }: LineItemGridProps) {
   }
 
   const cellClass =
-    "w-full border-0 bg-transparent px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+    "w-full border-0 bg-transparent px-2.5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-signal rounded-[3px]"
 
   return (
-    <div className="overflow-x-auto rounded-md border border-neutral-300 dark:border-neutral-700">
+    <div className="panel overflow-x-auto">
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-neutral-300 bg-neutral-50 text-left text-xs uppercase text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900">
-            <th className="px-2 py-2 w-20">Menge</th>
-            <th className="px-2 py-2 w-24">Einheit</th>
-            <th className="px-2 py-2">Beschreibung</th>
-            <th className="px-2 py-2 w-28">Einzelpreis</th>
-            <th className="px-2 py-2 w-56">MwSt.-Satz</th>
-            <th className="px-2 py-2 w-28 text-right">Gesamt</th>
+          <tr className="border-b border-ink/10 text-left text-xs tracking-wide text-ink/45 dark:border-paper/10 dark:text-paper/45">
+            <th className="px-2.5 py-2.5 w-20 font-medium">Menge</th>
+            <th className="px-2.5 py-2.5 w-24 font-medium">Einheit</th>
+            <th className="px-2.5 py-2.5 font-medium">Beschreibung</th>
+            <th className="px-2.5 py-2.5 w-28 font-medium">Einzelpreis</th>
+            <th className="px-2.5 py-2.5 w-56 font-medium">MwSt.-Satz</th>
+            <th className="px-2.5 py-2.5 w-28 text-right font-medium">Gesamt</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-neutral-100 last:border-0 dark:border-neutral-800">
+            <tr key={rowIndex} className="border-b border-ink/6 last:border-0 dark:border-paper/6">
               <td className="p-0">
                 <input
                   ref={(el) => setCellRef(rowIndex, 0, el)}
-                  className={cellClass}
+                  className={`${cellClass} font-mono`}
                   value={row.quantity}
                   disabled={disabled}
                   onChange={(e) => updateRow(rowIndex, { quantity: e.target.value })}
@@ -156,7 +156,7 @@ export function LineItemGrid({ items, onChange, disabled }: LineItemGridProps) {
               <td className="p-0">
                 <input
                   ref={(el) => setCellRef(rowIndex, 3, el)}
-                  className={cellClass}
+                  className={`${cellClass} font-mono`}
                   value={row.unit_price}
                   disabled={disabled}
                   onChange={(e) => updateRow(rowIndex, { unit_price: e.target.value })}
@@ -183,7 +183,7 @@ export function LineItemGrid({ items, onChange, disabled }: LineItemGridProps) {
                   ))}
                 </select>
               </td>
-              <td className="px-2 py-1.5 text-right tabular-nums text-neutral-600 dark:text-neutral-400">
+              <td className="px-2.5 py-2 text-right font-mono tabular-nums text-ink/60 dark:text-paper/60">
                 {lineTotal(row).toFixed(2)} €
               </td>
             </tr>

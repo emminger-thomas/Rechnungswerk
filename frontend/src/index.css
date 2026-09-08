@@ -1,9 +1,66 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Werkbuch palette: cool ink / warm paper, one signal-orange accent. */
+  --color-paper: #f3f1ea;
+  --color-paper-raised: #ffffff;
+  --color-paper-line: #dcd7c9;
+  --color-ink: #14171d;
+  --color-ink-raised: #1b1f28;
+  --color-ink-line: #2a2f3a;
+
+  --color-signal: #e2611f;
+  --color-signal-strong: #c04f16;
+
+  --color-status-draft: #7a7568;
+  --color-status-open: #3e6fa8;
+  --color-status-overdue: #c1841a;
+  --color-status-paid: #3d8657;
+  --color-status-cancelled: #a3483a;
+}
+
 :root {
   color-scheme: light dark;
 }
 
 body {
   margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+::selection {
+  background-color: var(--color-signal);
+  color: white;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-[4px] px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-signal text-white hover:bg-signal-strong;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-[4px] px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-ink/20 text-ink hover:bg-ink/5 dark:border-paper/20 dark:text-paper dark:hover:bg-paper/10;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-[4px] px-2 py-1 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 text-ink/60 hover:text-ink dark:text-paper/60 dark:hover:text-paper;
+  }
+
+  .field {
+    @apply w-full rounded-[4px] border border-ink/15 bg-paper-raised px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:border-signal focus:outline-none dark:border-paper/15 dark:bg-ink-raised dark:text-paper dark:placeholder:text-paper/40;
+  }
+
+  .panel {
+    @apply rounded-[4px] border border-ink/10 bg-paper-raised dark:border-paper/10 dark:bg-ink-raised;
+  }
 }

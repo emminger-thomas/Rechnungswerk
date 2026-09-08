@@ -26,11 +26,11 @@ export function CsvImportWizard() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-4">
-      <h1 className="text-xl font-semibold">Kunden aus Excel/CSV importieren</h1>
+    <div className="mx-auto max-w-3xl space-y-5 p-4 sm:p-6">
+      <h1 className="text-xl font-semibold tracking-tight">Kunden aus Excel/CSV importieren</h1>
 
       <div
-        className="cursor-pointer rounded-md border-2 border-dashed border-neutral-300 p-8 text-center text-neutral-500 hover:border-blue-400 dark:border-neutral-700"
+        className="cursor-pointer rounded-[4px] border-2 border-dashed border-ink/20 p-8 text-center text-sm text-ink/50 transition-colors hover:border-signal hover:text-ink/70 dark:border-paper/20 dark:text-paper/50 dark:hover:text-paper/70"
         onClick={() => fileInputRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -52,30 +52,30 @@ export function CsvImportWizard() {
         {file ? file.name : "Datei hierher ziehen oder klicken zum Auswählen (.csv, .xlsx)"}
       </div>
 
-      {importMutation.isPending && <p className="text-sm text-neutral-500">Wird verarbeitet ...</p>}
+      {importMutation.isPending && (
+        <p className="text-sm text-ink/50 dark:text-paper/50">Wird verarbeitet ...</p>
+      )}
 
       {preview && (
         <div className="space-y-3">
           <div className="text-sm">
-            <span className="font-medium text-green-700 dark:text-green-400">
-              {preview.valid_count} gültig
-            </span>{" "}
-            von {preview.total_count} Zeilen erkannt.
+            <span className="font-medium text-status-paid">{preview.valid_count} gültig</span> von{" "}
+            {preview.total_count} Zeilen erkannt.
           </div>
 
           {preview.unmapped_columns.length > 0 && (
-            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+            <div className="rounded-[4px] border border-status-overdue/30 bg-status-overdue/10 px-3 py-2 text-sm text-status-overdue">
               Nicht zugeordnete Spalten: {preview.unmapped_columns.join(", ")}
             </div>
           )}
 
-          <div className="max-h-80 overflow-auto rounded-md border border-neutral-300 dark:border-neutral-700">
+          <div className="panel max-h-80 overflow-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-neutral-50 text-xs uppercase text-neutral-500 dark:bg-neutral-900">
+              <thead className="border-b border-ink/10 text-xs text-ink/45 dark:border-paper/10 dark:text-paper/45">
                 <tr>
-                  <th className="px-2 py-1">Name</th>
-                  <th className="px-2 py-1">Ort</th>
-                  <th className="px-2 py-1">Fehler</th>
+                  <th className="px-3 py-2 font-medium">Name</th>
+                  <th className="px-3 py-2 font-medium">Ort</th>
+                  <th className="px-3 py-2 font-medium">Fehler</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,15 +84,13 @@ export function CsvImportWizard() {
                     key={index}
                     className={
                       row.errors.length > 0
-                        ? "bg-red-50 dark:bg-red-950"
-                        : "bg-white dark:bg-neutral-950"
+                        ? "bg-status-overdue/10"
+                        : "border-t border-ink/6 dark:border-paper/6"
                     }
                   >
-                    <td className="px-2 py-1">{row.data.name}</td>
-                    <td className="px-2 py-1">{row.data.city}</td>
-                    <td className="px-2 py-1 text-red-700 dark:text-red-400">
-                      {row.errors.join("; ")}
-                    </td>
+                    <td className="px-3 py-1.5">{row.data.name}</td>
+                    <td className="px-3 py-1.5">{row.data.city}</td>
+                    <td className="px-3 py-1.5 text-status-overdue">{row.errors.join("; ")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -106,7 +104,7 @@ export function CsvImportWizard() {
                 setPreview(null)
                 setFile(null)
               }}
-              className="rounded px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="btn-ghost"
             >
               Abbrechen
             </button>
@@ -114,7 +112,7 @@ export function CsvImportWizard() {
               type="button"
               disabled={preview.valid_count === 0}
               onClick={handleConfirm}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary"
             >
               {preview.valid_count} Kunden importieren
             </button>
@@ -123,7 +121,7 @@ export function CsvImportWizard() {
       )}
 
       {result && (
-        <div className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+        <div className="rounded-[4px] border border-status-paid/30 bg-status-paid/10 px-3 py-2 text-sm text-status-paid">
           {result}
         </div>
       )}

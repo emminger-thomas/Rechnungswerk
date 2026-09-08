@@ -9,19 +9,19 @@ import {
 } from "../api/invoices"
 import type { Invoice, InvoiceStatus } from "../types/models"
 
-const COLUMNS: { status: InvoiceStatus; label: string }[] = [
-  { status: "DRAFT", label: "Entwurf" },
-  { status: "ISSUED", label: "Offen" },
-  { status: "OVERDUE", label: "Überfällig" },
-  { status: "PAID", label: "Bezahlt" },
-  { status: "CANCELLED", label: "Storniert" },
+const COLUMNS: { status: InvoiceStatus; label: string; dot: string; border: string }[] = [
+  { status: "DRAFT", label: "Entwurf", dot: "bg-status-draft", border: "border-l-status-draft" },
+  { status: "ISSUED", label: "Offen", dot: "bg-status-open", border: "border-l-status-open" },
+  { status: "OVERDUE", label: "Überfällig", dot: "bg-status-overdue", border: "border-l-status-overdue" },
+  { status: "PAID", label: "Bezahlt", dot: "bg-status-paid", border: "border-l-status-paid" },
+  { status: "CANCELLED", label: "Storniert", dot: "bg-status-cancelled", border: "border-l-status-cancelled" },
 ]
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function InvoiceCard({ invoice }: { invoice: Invoice }) {
+function InvoiceCard({ invoice, border }: { invoice: Invoice; border: string }) {
   const [paidDateOpen, setPaidDateOpen] = useState(false)
   const [paidDate, setPaidDate] = useState(todayIso())
   const markPaid = useMarkInvoicePaid()
@@ -30,19 +30,24 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
   const canAct = invoice.status === "ISSUED" || invoice.status === "OVERDUE"
 
   return (
-    <div className="space-y-2 rounded-md border border-neutral-200 bg-white p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className={`panel space-y-2 border-l-[3px] p-3 text-sm ${border}`}>
       <Link to={`/rechnungen/${invoice.id}`} className="block">
-        <div className="font-medium">
-          {invoice.invoice_number ?? "Entwurf"} · {invoice.customer_detail?.name}
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="truncate font-medium">{invoice.customer_detail?.name}</span>
+          <span className="shrink-0 font-mono text-xs tabular-nums text-ink/50 dark:text-paper/50">
+            {invoice.invoice_number ?? "—"}
+          </span>
         </div>
-        <div className="flex items-center justify-between text-neutral-500">
-          <span>{invoice.due_date ? `fällig ${invoice.due_date}` : "kein Fälligkeitsdatum"}</span>
-          <span className="tabular-nums">{invoice.total_gross} €</span>
+        <div className="mt-1 flex items-center justify-between gap-2 text-xs text-ink/50 dark:text-paper/50">
+          <span className="truncate">{invoice.due_date ? `fällig ${invoice.due_date}` : "kein Fälligkeitsdatum"}</span>
+          <span className="shrink-0 font-mono tabular-nums text-sm text-ink dark:text-paper">
+            {invoice.total_gross} €
+          </span>
         </div>
       </Link>
 
       {invoice.reminder_count > 0 && (
-        <div className="text-xs font-medium text-amber-600 dark:text-amber-400">
+        <div className="text-xs font-medium text-status-overdue">
           Mahnstufe {invoice.reminder_count}
         </div>
       )}
@@ -55,7 +60,7 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
                 type="date"
                 value={paidDate}
                 onChange={(e) => setPaidDate(e.target.value)}
-                className="rounded border border-neutral-300 px-1 py-0.5 text-xs dark:border-neutral-700 dark:bg-neutral-800"
+                className="rounded-[3px] border border-ink/15 bg-transparent px-1 py-0.5 text-xs dark:border-paper/15"
               />
               <button
                 type="button"
@@ -66,14 +71,14 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
                     { onSuccess: () => setPaidDateOpen(false) }
                   )
                 }
-                className="rounded bg-green-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                className="rounded-[3px] bg-status-paid px-2 py-0.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
               >
                 Bestätigen
               </button>
               <button
                 type="button"
                 onClick={() => setPaidDateOpen(false)}
-                className="rounded px-2 py-0.5 text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+                className="btn-ghost px-2 py-0.5 text-xs"
               >
                 Abbrechen
               </button>
@@ -82,7 +87,7 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
             <button
               type="button"
               onClick={() => setPaidDateOpen(true)}
-              className="rounded bg-green-600/10 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-600/20 dark:text-green-400"
+              className="rounded-[3px] bg-status-paid/10 px-2 py-1 text-xs font-medium text-status-paid hover:bg-status-paid/20"
             >
               Als bezahlt markieren
             </button>
@@ -91,7 +96,7 @@ function InvoiceCard({ invoice }: { invoice: Invoice }) {
             type="button"
             disabled={createReminder.isPending}
             onClick={() => createReminder.mutate(invoice.id)}
-            className="rounded bg-amber-600/10 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-600/20 disabled:opacity-50 dark:text-amber-400"
+            className="rounded-[3px] bg-status-overdue/10 px-2 py-1 text-xs font-medium text-status-overdue hover:bg-status-overdue/20 disabled:opacity-50"
           >
             Mahnung erstellen
           </button>
@@ -114,51 +119,45 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="mx-auto max-w-6xl space-y-5 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
         <div className="flex items-center gap-2">
           <input
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+            className="field w-auto py-1.5"
           />
-          <button
-            type="button"
-            onClick={handleExport}
-            className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
-          >
+          <button type="button" onClick={handleExport} className="btn-secondary">
             DATEV-Export
           </button>
-          <Link
-            to="/rechnungen/neu"
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-          >
+          <Link to="/rechnungen/neu" className="btn-primary">
             + Neue Rechnung
           </Link>
         </div>
       </div>
 
-      {isLoading && <p className="text-neutral-500">Lädt ...</p>}
+      {isLoading && <p className="text-sm text-ink/50 dark:text-paper/50">Lädt …</p>}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {COLUMNS.map((column) => {
           const invoices = invoicesByStatus(column.status)
           return (
-            <div key={column.status} className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                  {column.label}
-                </h2>
-                <span className="text-xs text-neutral-400">{invoices.length}</span>
+            <div key={column.status} className="space-y-2.5">
+              <div className="flex items-center gap-2 border-b-2 border-ink/10 pb-2 dark:border-paper/10">
+                <span className={`h-2 w-2 rounded-full ${column.dot}`} />
+                <h2 className="text-sm font-medium">{column.label}</h2>
+                <span className="ml-auto font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">
+                  {invoices.length}
+                </span>
               </div>
               <div className="space-y-2">
                 {invoices.map((invoice) => (
-                  <InvoiceCard key={invoice.id} invoice={invoice} />
+                  <InvoiceCard key={invoice.id} invoice={invoice} border={column.border} />
                 ))}
                 {invoices.length === 0 && (
-                  <div className="rounded-md border border-dashed border-neutral-200 p-3 text-center text-xs text-neutral-400 dark:border-neutral-800">
+                  <div className="rounded-[4px] border border-dashed border-ink/15 p-3 text-center text-xs text-ink/35 dark:border-paper/15 dark:text-paper/35">
                     Keine Rechnungen
                   </div>
                 )}

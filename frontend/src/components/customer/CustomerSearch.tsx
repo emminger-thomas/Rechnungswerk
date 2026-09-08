@@ -16,16 +16,19 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
 
   if (selected) {
     return (
-      <div className="flex items-center justify-between rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
+      <div className="panel flex items-center justify-between px-3 py-2.5">
         <div>
           <div className="font-medium">
-            {selected.name} <span className="text-neutral-500">· {selected.customer_number}</span>
+            {selected.name}{" "}
+            <span className="font-mono text-sm text-ink/45 dark:text-paper/45">
+              · {selected.customer_number}
+            </span>
           </div>
-          <div className="text-sm text-neutral-500">{selected.city}</div>
+          <div className="text-sm text-ink/50 dark:text-paper/50">{selected.city}</div>
         </div>
         <button
           type="button"
-          className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+          className="text-sm font-medium text-signal hover:underline"
           onClick={() => {
             setQuery("")
             onSelect(null as unknown as CustomerLookup)
@@ -44,16 +47,18 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Kunde suchen (Name, Kundennummer, PLZ, USt-IdNr.) ..."
-        className="w-full rounded-md border border-neutral-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900"
+        className="field py-2.5"
         autoFocus
       />
       {query.trim().length > 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded-md border border-neutral-300 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
-          {isFetching && <div className="px-3 py-2 text-sm text-neutral-500">Suche ...</div>}
+        <div className="panel absolute z-10 mt-1 w-full shadow-lg">
+          {isFetching && (
+            <div className="px-3 py-2 text-sm text-ink/50 dark:text-paper/50">Suche ...</div>
+          )}
           {!isFetching && results?.length === 0 && (
             <button
               type="button"
-              className="block w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-neutral-100 dark:text-blue-400 dark:hover:bg-neutral-800"
+              className="block w-full px-3 py-2 text-left text-sm font-medium text-signal hover:bg-ink/[0.03] dark:hover:bg-paper/[0.03]"
               onClick={() => setShowQuickAdd(true)}
             >
               + "{query}" als neuen Kunden anlegen
@@ -63,13 +68,16 @@ export function CustomerSearch({ selected, onSelect }: CustomerSearchProps) {
             <button
               type="button"
               key={customer.id}
-              className="block w-full border-b border-neutral-100 px-3 py-2 text-left last:border-0 hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-800"
+              className="block w-full border-b border-ink/8 px-3 py-2 text-left last:border-0 hover:bg-ink/[0.03] dark:border-paper/8 dark:hover:bg-paper/[0.03]"
               onClick={() => onSelect(customer)}
             >
               <div className="font-medium">
-                {customer.name} <span className="text-neutral-500">· {customer.customer_number}</span>
+                {customer.name}{" "}
+                <span className="font-mono text-sm text-ink/45 dark:text-paper/45">
+                  · {customer.customer_number}
+                </span>
               </div>
-              <div className="text-sm text-neutral-500">
+              <div className="text-sm text-ink/50 dark:text-paper/50">
                 {customer.city}
                 {customer.vat_id ? ` · ${customer.vat_id}` : ""}
               </div>
@@ -120,7 +128,7 @@ function QuickAddCustomerForm({
 
   return (
     <form
-      className="absolute z-20 mt-1 w-full space-y-2 rounded-md border border-neutral-300 bg-white p-3 shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+      className="panel absolute z-20 mt-1 w-full space-y-2 p-3 shadow-lg"
       onSubmit={(e) => {
         e.preventDefault()
         onSubmit(form).then(onCreated)
@@ -132,14 +140,14 @@ function QuickAddCustomerForm({
         placeholder="Name"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        className="w-full rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+        className="field py-1.5"
       />
       <input
         required
         placeholder="Straße"
         value={form.street}
         onChange={(e) => setForm({ ...form, street: e.target.value })}
-        className="w-full rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+        className="field py-1.5"
       />
       <div className="flex gap-2">
         <input
@@ -147,29 +155,21 @@ function QuickAddCustomerForm({
           placeholder="PLZ"
           value={form.zip_code}
           onChange={(e) => setForm({ ...form, zip_code: e.target.value })}
-          className="w-24 rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+          className="field w-24 py-1.5"
         />
         <input
           required
           placeholder="Ort"
           value={form.city}
           onChange={(e) => setForm({ ...form, city: e.target.value })}
-          className="flex-1 rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-800"
+          className="field flex-1 py-1.5"
         />
       </div>
       <div className="flex justify-end gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded px-3 py-1 text-sm text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-        >
+        <button type="button" onClick={onCancel} className="btn-ghost">
           Abbrechen
         </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn-primary">
           Anlegen
         </button>
       </div>
